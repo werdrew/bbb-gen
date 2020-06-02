@@ -5,8 +5,7 @@ from pathlib import Path
 from selenium import webdriver
 from selenium.webdriver.firefox.options import Options
 import urllib.request
-
-BASE_URL = 'https://blackironbeast.com/5/3/1/calculator'
+import yaml
 
 
 def _generate_url(options):
@@ -16,7 +15,7 @@ def _generate_url(options):
   # UB goes up 5 lbs per cycle, LB goes up 10 lbs per cycle
   url = ('https://blackironbeast.com/5/3/1/calculator?'
         'assistanceWork=boringButBig&massUnits=pounds&maxesSwitch=trainingMax'
-        f'&militaryTrainingMaxWeight={options["press"]}&benchTrainingMaxWeight={options["bench_press"]}&squatTrainingMaxWeight={options["squat"]}&deadliftTrainingMaxWeight={options["deadlift"]}'
+        f'&militaryTrainingMaxWeight={options["ohp"]}&benchTrainingMaxWeight={options["bench"]}&squatTrainingMaxWeight={options["squat"]}&deadliftTrainingMaxWeight={options["deadlift"]}'
         '&barWeight=45&platePairs_100=0&platePairs_55=0&platePairs_45=1&platePairs_35=1&platePairs_25=1&platePairs_20=0'
         '&platePairs_15=0&platePairs_10=1&platePairs_7_5=0&platePairs_5=2&platePairs_2_5=1&platePairs_2=0&platePairs_1_5=0'
         '&platePairs_1_25=0&platePairs_1=0&platePairs_0_75=0&platePairs_0_5=0&platePairs_0_25=0&warmup=defranco'
@@ -55,7 +54,7 @@ def _extract_cycle_info(page):
       for row in rows:
         # e.g. {"press": []}
         if row.name == 'th':
-          current_header = row.text
+          current_header = ' '.join([word.capitalize() for word in row.text.split(' ')])
           col_info[current_header] = [] 
         # e.g. {"press": ["5x50", "5x60", ...]}
         elif row.name == 'td':
@@ -78,7 +77,6 @@ def _generate_csv(
   scheme_replacements=[],
   days=['Monday', 'Wednesday', 'Thursday', 'Saturdays']
 ):
-  
   def _generate_week_prelude(week_num):
     return f'Week {week_num},,Set 1,Set 2,Set 3,Set 4,Set 5,Set 6,How Many?,\n'
 
@@ -86,9 +84,8 @@ def _generate_csv(
     #Replacements will go in here
     csv = days[day_idx]
     for exercise, rep_schemes in day_info.items():
-      if (exercise in header_replacements):
-        #TODO: replacements here
-        pass
+      if (exercise in header_replacements[day_idx]):
+        exercise = header_replacements[day_idx][exercise]
       csv += f',{exercise},'
       for set_x_rep in rep_schemes:
         csv += f'{set_x_rep},'
@@ -110,25 +107,33 @@ def _generate_csv(
   return csv
 
 
+def _load_config(path):
+  with open(path, 'r') as stream:
+    try:
+      return yaml.safe_load(stream)
+    except yaml.YAMLError as exc:
+      print('Error occurred while reading config: ' + exc)
+
+
 def _get_args():
   parser = argparse.ArgumentParser()
-  parser.add_argument('-o', '--output', type=str, default='./artifacts/Cycle.csv', help='Output file')
+  parser.add_argument('-o', '--output', type=str, default='./artifacts/Cycle.csv', help='Path to output file')
+  parser.add_argument('--config', type=str, default='./config.yaml', help='Path to config file')
   return parser.parse_args()
 
 
 def main():
   args = _get_args()
+  config = _load_config(args.config)
+  print(config)
 
-  options = {
-    "press": 120,
-    "bench_press": 210,
-    "squat": 240,
-    "deadlift": 280
-  }
-  url = _generate_url(options)
+  url = _generate_url(config['form_options'])
   page = _get_page(url)
   cycle_info = _extract_cycle_info(page)
-  csv = _generate_csv(cycle_info)
+  csv = _generate_csv(
+    cycle_info,
+    header_replacements=config['header_replacements']
+  )
   
   Path('/'.join(args.output.split('/')[:-1])).mkdir(parents=True, exist_ok=True)
   with open(args.output, 'w') as output:

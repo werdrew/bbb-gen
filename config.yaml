@@ -1,5 +1,16 @@
-1rm:
-  squat: 285
-  bench: 220
-  deadlift: 300
+---
+form_options:
+  squat: 240
+  bench: 210
+  deadlift: 280
   ohp: 120
+header_replacements:
+  - Press: OHP
+    Bench Press: CGBP
+    Chin-ups: Chinups
+  - Squat: Front Squat
+    Hanging Leg Raise: Hanging Knee Raise
+  - Press: OHP
+    Dumbbell Row: Inverted Rows
+  - Deadlift: RDL
+    Leg Curl: Ab Wheel
