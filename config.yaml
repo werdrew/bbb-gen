@@ -14,3 +14,6 @@ header_replacements:
     Dumbbell Row: Inverted Rows
   - Deadlift: RDL
     Leg Curl: Ab Wheel
+scheme_replacements:
+  RDL: 10x110
+  Ab Wheel: 7x

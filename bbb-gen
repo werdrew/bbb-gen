@@ -84,9 +84,15 @@ def _generate_csv(
     #Replacements will go in here
     csv = days[day_idx]
     for exercise, rep_schemes in day_info.items():
-      if (exercise in header_replacements[day_idx]):
+      if exercise in header_replacements[day_idx]:
         exercise = header_replacements[day_idx][exercise]
       csv += f',{exercise},'
+      if exercise in scheme_replacements:
+        replacement = scheme_replacements[exercise]
+        if isinstance(replacement, list):
+          rep_schemes = replacement[:len(rep_schemes)]
+        else:
+          rep_schemes = [replacement] * len(rep_schemes)
       for set_x_rep in rep_schemes:
         csv += f'{set_x_rep},'
       csv += '\n'
@@ -125,14 +131,14 @@ def _get_args():
 def main():
   args = _get_args()
   config = _load_config(args.config)
-  print(config)
 
   url = _generate_url(config['form_options'])
   page = _get_page(url)
   cycle_info = _extract_cycle_info(page)
   csv = _generate_csv(
     cycle_info,
-    header_replacements=config['header_replacements']
+    header_replacements=config['header_replacements'],
+    scheme_replacements=config['scheme_replacements']
   )
   
   Path('/'.join(args.output.split('/')[:-1])).mkdir(parents=True, exist_ok=True)
