@@ -1,1 +1,4 @@
 venv
+geckodriver.log
+artifacts
+.DS_Store
