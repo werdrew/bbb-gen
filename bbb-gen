@@ -69,8 +69,6 @@ def _extract_cycle_info(page):
   return cycle_info
 
 
-# header_replacements --> specify what to replace default headers with
-# scheme_replacements --> specify what to replace default rep schemes with
 def _generate_csv(
   cycle_info, 
   header_replacements=[],
@@ -80,35 +78,45 @@ def _generate_csv(
   def _generate_week_prelude(week_num):
     return f'Week {week_num},,Set 1,Set 2,Set 3,Set 4,Set 5,Set 6,How Many?,\n'
 
+
   def _generate_csv_for_day(day_info, day_idx):
-    #Replacements will go in here
     csv = days[day_idx]
+
+    # Iterate over each object in the information for the day,
+    # which is a mapping from exercise name to rep scheme.
     for exercise, rep_schemes in day_info.items():
+      # Make header replacements if any exist.
       if exercise in header_replacements[day_idx]:
         exercise = header_replacements[day_idx][exercise]
+      
       csv += f',{exercise},'
+
+      # Make rep scheme replacements if any exist.
       if exercise in scheme_replacements:
         replacement = scheme_replacements[exercise]
         if isinstance(replacement, list):
           rep_schemes = replacement[:len(rep_schemes)]
         else:
           rep_schemes = [replacement] * len(rep_schemes)
+  
       for set_x_rep in rep_schemes:
         csv += f'{set_x_rep},'
+      
       csv += '\n'
+    
     return csv
+
 
   def _generate_empty_line():
     return ',,,,,,,,,\n'
 
+
   csv = ''
-  week_counter = 1
   for week_idx in range(len(cycle_info)):
-    csv += _generate_week_prelude(week_counter)
+    csv += _generate_week_prelude(week_idx + 1)
     for day_idx in range(len(cycle_info[week_idx])):
       csv += _generate_csv_for_day(cycle_info[week_idx][day_idx], day_idx)
       csv += _generate_empty_line()
-    week_counter += 1
 
   return csv
 
