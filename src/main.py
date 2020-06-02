@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 from bs4 import BeautifulSoup
+from selenium import webdriver
+from selenium.webdriver.firefox.options import Options
 import urllib.request
 
 BASE_URL = 'https://blackironbeast.com/5/3/1/calculator'
@@ -26,14 +28,48 @@ def _generate_url(options):
 
 
 def _get_page(url):
-  req = urllib.request.Request(url)
-  page = urllib.request.urlopen(req).read()
+  # Start Firefox in Headless mode, so that it doesn't open a browser window
+  options = Options()
+  options.headless = True
+  # We need Selenium because the page requires JS to show the cycle info
+  driver = webdriver.Firefox(executable_path="../driver/geckodriver", options=options)
+  driver.get(url)
+  page = driver.page_source
+  driver.quit()
   soup = BeautifulSoup(page, 'html.parser')
   return soup
 
 
-def _extract_weeks(page):
-  print(page)
+def _extract_cycle_info(page):
+  weeks = page.find_all('table', attrs={'class': 'week'})
+  cycle_info = []
+  for week in weeks:
+    week_info = []
+    cols = week.select('tbody tr td table.routine')
+    for col in cols:
+      col_info = {}
+      rows = col.find_all(['th', 'td'])
+      current_header = None
+      for row in rows:
+        # e.g. {"press": []}
+        if row.name == 'th':
+          current_header = row.text
+          col_info[current_header] = [] 
+        # e.g. {"press": ["5x50", "5x60", ...]}
+        elif row.name == 'td':
+          text = row.text
+          # Replace unicode cross character with the letter x and remove spaces
+          text = text.replace(' × ', 'x')
+          # Remove plate information
+          text = text.split(' ')[0]
+          col_info[current_header].append(text)
+      week_info.append(col_info)
+    cycle_info.append(week_info)
+  return cycle_info
+
+
+def _generate_csv(cycle_info):
+  return ''
 
 
 def main():
@@ -45,6 +81,8 @@ def main():
   }
   url = _generate_url(options)
   page = _get_page(url)
-  weeks = _extract_weeks(page)
+  cycle_info = _extract_cycle_info(page)
+  csv = _generate_csv(cycle_info)
+  # print(csv)
 
 main()
