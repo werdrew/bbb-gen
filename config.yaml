@@ -17,3 +17,7 @@ header_replacements:
 scheme_replacements:
   RDL: 10x110
   Ab Wheel: 7x
+driver_paths:
+  Darwin: ./driver/geckodriver0.26-macos
+  Linux: ./driver/geckodriver0.26-linux
+  Windows: ./driver/geckodriver0.26-windows

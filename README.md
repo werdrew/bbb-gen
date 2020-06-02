@@ -4,6 +4,7 @@ Generate a 5/3/1 Boring But Big cycle
 ## Requirements
 
 * python3 (and pip3/virtualenv)
+* Firefox
 
 ## Setup
 
@@ -56,6 +57,8 @@ scheme_replacements:
 ```
 
 This will replace whatever was generated for RDL's with 10x110, 10x120, ..., etc (and will truncate any days that have less than 5 sets to the first n sets from the list) and whatever was generated for Ab Wheel with 7x for each set.
+
+`driver_paths` point to the geckodriver executable for each platform.
 
 Then, to generate the CSV file:
 ```

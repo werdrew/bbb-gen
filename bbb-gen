@@ -2,6 +2,7 @@
 import argparse
 from bs4 import BeautifulSoup
 from pathlib import Path
+import platform
 from selenium import webdriver
 from selenium.webdriver.firefox.options import Options
 import urllib.request
@@ -28,12 +29,13 @@ def _generate_url(options):
   return url
 
 
-def _get_page(url):
+def _get_page(url, paths):
+  host_sys = platform.system()
   # Start Firefox in Headless mode, so that it doesn't open a browser window
   options = Options()
   options.headless = True
   # We need Selenium because the page requires JS to show the cycle info
-  driver = webdriver.Firefox(executable_path="driver/geckodriver", options=options)
+  driver = webdriver.Firefox(executable_path=paths[host_sys], options=options)
   driver.get(url)
   page = driver.page_source
   driver.quit()
@@ -141,7 +143,7 @@ def main():
   config = _load_config(args.config)
 
   url = _generate_url(config['form_options'])
-  page = _get_page(url)
+  page = _get_page(url, config['driver_paths'])
   cycle_info = _extract_cycle_info(page)
   csv = _generate_csv(
     cycle_info,
