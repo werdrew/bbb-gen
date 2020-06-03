@@ -68,3 +68,12 @@ $ ./bbb-gen [-o/--output ./path/to/output/file] [--config ./path/to/config]
 By default, the script will write the output file to `./artifacts/Cycle.csv` and look for a config file at `./config.yaml`.
 
 The CSV can then be imported into Sheets (and probably Excel or any other CSV reader).
+
+## Add some style
+
+CSVs by default don't have any style meta-data associated with them. You can optionally also ask the script to generate an HTML page with the information, and then style it with CSS.
+
+To generate an HTML file,
+```
+$ ./bbb-gen [--html ./path/to/html]
+```

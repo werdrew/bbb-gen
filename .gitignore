@@ -2,3 +2,4 @@ venv
 geckodriver.log
 artifacts
 .DS_Store
+view/__pycache__
